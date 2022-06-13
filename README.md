@@ -1,7 +1,7 @@
 # terminal-chess
 A python based terminal chess application. Uses ANSI escape sequences to print board squares and clear the screen – for reprinting. Visual UI likely to vary based on terminal and terminal settings/preferences.
 
-![A screenshot of the starting game board](game.png "Starting Game Board")
+![A screenshot of the starting game board](https://github.com/elveskevtar/terminal-chess/blob/mainline/game.png "Starting Game Board")
 *Initial game board, waiting for first player's input*
 
 Input to this application is standard [algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)). Long/fully-expanded algebraic notation, ICCF numeric notation, PGN, minimal/abbreviated algebraic notation are not supported yet, but may be in the future.
