@@ -1,0 +1,44 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terminal-chess"
+version = "0.0.1"
+description = "A minimalistic python terminal-chess application"
+readme = "README.md"
+authors = [{ name = "Kevin Tarta", email = "kevtar@gmail.com" }]
+maintainers = [{ name = "Kevin Tarta", email = "kevtar@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment",
+    "Topic :: Games/Entertainment :: Board Games",
+    "Topic :: Games/Entertainment :: Turn Based Strategy",
+]
+keywords = ["chess", "terminal", "console", "interactive"]
+dependencies = []
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = [
+    "pytest == 7.1.2",
+    "flake8 == 4.0.1",
+    "build == *",
+    "twine == *",
+]
+
+[project.urls]
+Source = "https://github.com/elveskevtar/terminal-chess"
+Tracker = "https://github.com/elveskevtar/terminal-chess/issues"
+Changelog = "https://github.com/elveskevtar/terminal-chess/blob/mainline/CHANGELOG.md"
+
+[project.scripts]
+pychess = "pychess.__main__:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
