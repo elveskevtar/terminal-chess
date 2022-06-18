@@ -1,5 +1,11 @@
 # terminal-chess changelog
 ## alpha
+### 0.0.2
+* deprecating 0.0.1 - it is not a working version :( sorry
+* fixes issues with 0.0.1, no moves working
+* updates the UI to include pieces captured!
+* add the test for Byrne Fischer New York 1956
+
 ### 0.0.1
 * working chess game states and transitions
 * basic chess notation parsing based on game state
