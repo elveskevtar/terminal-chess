@@ -25,14 +25,13 @@ Submit these to Github [issues](https://github.com/elveskevtar/terminal-chess). 
 These are some of the items that have been thought of as potential next features/improvements to the current implementation. This list does not necessarily guarantee that the feature will ever be implemented but they have been considered.
 
 1. General refactoring of the logic, initial implementation was done as a quick MVP focusing on correctness and not maintainability or future development. This is a high priority item.
-2. Closely tied to #1, create a type of "PotentialMoveGenerator" which will utilize python generators to list all legal moves given the state of the game.
-3. Better UI/UX: this includes listing the moves already played, the pieces captured per player, an option to flip the board display each turn, better help messages, etc.
-4. Serialization and ability to save/continue a game
-5. Draws/surrenders
-6. Turn/game clock and different game modes like bullet, etc.
-7. A hardy test suite
-8. Allow other input notations and support formats like PGN
-9. A simple AI
+2. Better UI/UX: this includes listing the moves already played, ~~the pieces captured per player~~, an option to flip the board display each turn, better help messages, etc.
+3. Serialization and ability to save/continue a game
+4. Draws/surrenders
+5. Turn/game clock and different game modes like bullet, etc.
+6. A hardy test suite
+7. Allow other input notations and support formats like PGN
+8. A simple AI
 
 Writing a network module is something that I want to do but will take significant effort. It's on the long-term roadmap though.
 

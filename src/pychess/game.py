@@ -106,21 +106,6 @@ def clear_console():
     print("\033c")
 
 
-def print_board(board: Dict[Tuple[int, int], Piece]):
-    print(" a b c d e f g h ")
-    for r in range(8):
-        rank_str = " "
-        for f in range(8):
-            tile_color = (r + f) % 2 * (44 - 42) + 42
-            if (r, f) in board:
-                rank_str += str(board[r, f]).format(tile_color)
-            else:
-                rank_str += str(Color.BLACK).format(tile_color) + " "
-            rank_str += " " + str(Color.ENDC)
-        print(rank_str + " " + str(8 - r))
-    print()
-
-
 def square_to_coord(square: str) -> tuple:
     return 8 - int(square[1]), ord(square[0]) - ord("a")
 
@@ -179,12 +164,6 @@ def filter_chain(iterable: Iterable, *filters: LambdaType) -> Iterable:
     for filter_func in filters:
         iterable = filter(filter_func, iterable)
     return iterable
-
-
-def print_game(board: Dict[Tuple[int, int], Piece], msg: str):
-    clear_console()
-    print_board(board)
-    print(" " + msg)
 
 
 piece_map = {
@@ -295,7 +274,7 @@ class Chess:
     def start(self, sleep_time: float = 0):
         msg = ""
         while not self.done:
-            print_game(self.board, msg)
+            print_game(self, msg)
             move = input(" {} move: ".format("White" if self.player_turn() else "Black"))
             result = self.parse_move(move)
             msg = result[1]
@@ -307,7 +286,7 @@ class Chess:
                     msg = "(check) " + msg
                 self.move(*result[2:5])
             sleep(sleep_time)
-        print_game(self.board, msg)
+        print_game(self, msg)
 
     def move(self, start_coord: Tuple, end_coord: Tuple, promote_func=None):
         if end_coord in self.board:
@@ -336,9 +315,6 @@ class Chess:
                 self.board.pop(rook_pos)
         self.turn += 1
 
-    def parse_castling(self) -> Tuple:
-        pass
-
     def parse_move(self, move: str) -> Tuple:
         if len(move) < 2:
             return parse_fail(move)
@@ -346,19 +322,20 @@ class Chess:
         move = move.strip()
 
         move_generator = self.move_generator.get_moves(self.player_color())
-        def color_filter(move): self.board[move[0]].color == self.player_color()
-        def piece_filter(move): self.board[move[0]].name == "king"
-        def dest_filter(move): move[0][0] == move[1][0] and abs(move[0][1] - move[1][1]) == 2
-        potential_moves = filter_chain(move_generator, dest_filter, piece_filter, color_filter)
+        color_filter = lambda move: self.board[move[0]].color == self.player_color()
+        piece_filter = lambda move: self.board[move[0]].name == "king"
+        dest_filter = lambda move: move[0][0] == move[1][0] and abs(move[0][1] - move[1][1]) == 2
         if move == "O-O-O":
-            def dir_filter(move): move[0][1] > move[1][1]
-            potential_moves = list(filter_chain(potential_moves, dir_filter))
+            dir_filter = lambda move: move[0][1] > move[1][1]
+            potential_moves = list(filter_chain(
+                move_generator, dest_filter, piece_filter, color_filter, dir_filter))
             if len(potential_moves) == 1:
                 return parse_success("queenside castle", *potential_moves[0])
             return False, "invalid queenside castle"
         if move == "O-O":
-            def dir_filter(move): move[0][1] < move[1][1]
-            potential_moves = list(filter_chain(potential_moves, dir_filter))
+            dir_filter = lambda move: move[0][1] < move[1][1]
+            potential_moves = list(filter_chain(
+                move_generator, dest_filter, piece_filter, color_filter, dir_filter))
             if len(potential_moves) == 1:
                 return parse_success("kingside castle", *potential_moves[0])
             return False, "invalid kingside castle"
@@ -428,14 +405,14 @@ class Chess:
         elif len(move) == 2:
             return parse_fail(original_move)
 
-        def rank_filter(move): specific_rank is None or specific_rank == move[0][0]
-        def file_filter(move): specific_file is None or specific_file == move[0][1]
-        def color_filter(move): self.board[move[0]].color == self.player_color()
-        def piece_filter(move): self.board[move[0]].name == "pawn"
-        def dest_filter(move): move[1] == dest_coord
+        rank_filter = lambda move: specific_rank is None or specific_rank == move[0][0]
+        file_filter = lambda move: specific_file is None or specific_file == move[0][1]
+        color_filter = lambda move: self.board[move[0]].color == self.player_color()
+        piece_filter = lambda move: self.board[move[0]].name == "pawn"
+        dest_filter = lambda move: move[1] == dest_coord
         if moving_piece is not None:
             piece_class: str = piece_map[moving_piece]["scan_args"]["piece_class"]
-            def piece_filter(move): self.board[move[0]].name == piece_class
+            piece_filter = lambda move: self.board[move[0]].name == piece_class
         potential_moves = list(filter_chain(
             move_generator, dest_filter, piece_filter, color_filter, rank_filter, file_filter))
         if len(potential_moves) > 1:
@@ -458,6 +435,44 @@ class Chess:
                 return False, "not checkmate"
             return success
         return parse_fail(original_move)
+
+
+def print_game(game: Chess, msg: str):
+    clear_console()
+    print_board(game)
+    print(" " + msg)
+
+
+def print_captures(game: Chess, color: Color, rank: int):
+    columns = 2
+    rank_str = " "
+    for col in range(columns):
+        tile_color = (rank + col) % 2 * (44 - 42) + 42
+        if len(game.captures[color]) > rank + (8 * col):
+            rank_str += str(game.captures[color][rank + (8 * col)]).format(tile_color)
+        else:
+            rank_str += str(Color.BLACK).format(tile_color) + " "
+        rank_str += " " + str(Color.ENDC)
+    print(rank_str, end="")
+
+
+def print_board(game: Chess):
+    print(" caps\t  a b c d e f g h \t caps")
+    for rank in range(8):
+        print_captures(game, Color.WHITE, rank)
+        rank_str = "\t  "
+        for file in range(8):
+            tile_color = (rank + file) % 2 * (44 - 42) + 42
+            if (rank, file) in game.board:
+                rank_str += str(game.board[rank, file]).format(tile_color)
+            else:
+                rank_str += str(Color.BLACK).format(tile_color) + " "
+            rank_str += " " + str(Color.ENDC)
+        rank_str += " {}\t".format(str(8 - rank))
+        print(rank_str, end="")
+        print_captures(game, Color.BLACK, rank)
+        print()
+    print()
 
 
 class PotentialMoveGenerator:
@@ -539,9 +554,9 @@ class PotentialMoveGenerator:
 
     def get_moves(self, player_color: Color, skip_check: bool = False,
                   start_coord: Tuple[int, int] = None) -> Generator[Tuple[int, int], None, None]:
-        def match_color(coord): self.game.board[coord].color == player_color
-        def match_pos(coord): True if start_coord is None else coord == start_coord
-        for coord in filter(match_color, filter(match_pos, self.game.board.keys())):
+        match_color = lambda coord: self.game.board[coord].color == player_color
+        match_pos = lambda coord: True if start_coord is None else coord == start_coord
+        for coord in filter_chain(self.game.board.keys(), match_pos, match_color):
             for move in self._get_moves(coord, player_color):
                 if skip_check or not self._is_self_check(player_color, *move):
                     yield move
