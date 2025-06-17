@@ -9,3 +9,9 @@ build
 
 # vscode
 .vscode
+
+# coverage
+htmlcov
+.coverage
+coverage.xml
+coverage.lcov
